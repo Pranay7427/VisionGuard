@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionGuard — CPU-Based Intelligent Video Analytics System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- TOP NAVIGATION & COMMAND BAR -->
+        <header class="top-nav">
+            <div class="brand-group">
+                <div class="brand-logo">
+                    <div class="radar-lens">
+                        <div class="radar-sweep"></div>
+                        <div class="radar-dot"></div>
+                    </div>
+                </div>
+                <div class="brand-info">
+                    <h1 class="brand-title">VISION<span>GUARD</span></h1>
+                    <span class="brand-subtitle">CPU-OPTIMIZED INTELLIGENT VIDEO ANALYTICS</span>
+                </div>
+            </div>
+
+            <!-- SOURCE SELECTION & LIVE TELEMETRY -->
+            <div class="source-selector-bar">
+                <div class="input-group">
+                    <label for="videoSourceSelect" class="source-label">VIDEO INPUT:</label>
+                    <select id="videoSourceSelect" class="cyber-select" onchange="changeVideoSource()">
+                        <option value="simulation:perimeter" selected>Demo: High-Security Perimeter</option>
+                        <option value="simulation:traffic">Demo: Multi-Lane Traffic Intersection</option>
+                        <option value="simulation:pedestrian">Demo: Pedestrian Plaza & Walkway</option>
+                        <option value="webcam:0">Physical Camera (Webcam 0)</option>
+                        <option value="webcam:1">Physical Camera (Webcam 1)</option>
+                    </select>
+                </div>
+                <button class="cyber-btn-outline" onclick="openUploadModal()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload Video
+                </button>
+                <input type="file" id="videoFileInput" accept="video/mp4,video/avi,video/mov" style="display:none" onchange="uploadVideoFile(event)">
+            </div>
+
+            <!-- SYSTEM HUD TELEMETRY PILLS -->
+            <div class="system-telemetry-hud">
+                <div class="telemetry-pill">
+                    <span class="pill-label">STATUS</span>
+                    <span class="pill-value text-emerald pulse-dot"><span class="dot"></span> LIVE</span>
+                </div>
+                <div class="telemetry-pill">
+                    <span class="pill-label">FPS</span>
+                    <span class="pill-value text-cyan" id="hudFps">0.0</span>
+                </div>
+                <div class="telemetry-pill">
+                    <span class="pill-label">CPU</span>
+                    <span class="pill-value text-amber" id="hudCpu">0%</span>
+                </div>
+                <div class="telemetry-pill">
+                    <span class="pill-label">RAM</span>
+                    <span class="pill-value" id="hudRam">0%</span>
+                </div>
+            </div>
+
+            <!-- QUICK ACTION CONTROLS -->
+            <div class="action-buttons-group">
+                <button id="btnSnapshot" class="action-btn" title="Capture Snapshot" onclick="triggerManualSnapshot()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    <span>SNAPSHOT</span>
+                </button>
+                <button id="btnRecord" class="action-btn record-btn" title="Toggle Recording" onclick="toggleManualRecording()">
+                    <span class="rec-dot"></span>
+                    <span id="recordBtnText">RECORD</span>
+                </button>
+                <button id="btnAudioToggle" class="action-btn sound-btn active" title="Toggle Alarm Audio" onclick="toggleAudioAlarm()">
+                    <svg id="soundIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                    <span id="soundBtnText">ALARM ON</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main class="dashboard-grid">
+            
+            <!-- LEFT COLUMN: CONTROLS & ZONE CONFIG -->
+            <aside class="dashboard-sidebar left-panel">
+                <div class="panel-card">
+                    <div class="card-header">
+                        <h2>ANALYTICS MODULES</h2>
+                        <span class="card-badge">ACTIVE</span>
+                    </div>
+                    <div class="card-body module-toggles">
+                        <label class="switch-row">
+                            <span class="switch-title">Motion Detection (MOG2)</span>
+                            <input type="checkbox" id="toggleMotion" checked onchange="updateSettings()">
+                            <span class="slider"></span>
+                        </label>
+                        <label class="switch-row">
+                            <span class="switch-title">Object Tracking & Trails</span>
+                            <input type="checkbox" id="toggleTracking" checked onchange="updateSettings()">
+                            <span class="slider"></span>
+                        </label>
+                        <label class="switch-row">
+                            <span class="switch-title">People Counting</span>
+                            <input type="checkbox" id="togglePeopleCount" checked onchange="updateSettings()">
+                            <span class="slider"></span>
+                        </label>
+                        <label class="switch-row">
+                            <span class="switch-title">Vehicle Counting</span>
+                            <input type="checkbox" id="toggleVehicleCount" checked onchange="updateSettings()">
+                            <span class="slider"></span>
+                        </label>
+                        <label class="switch-row">
+                            <span class="switch-title">Region Intrusion (ROI)</span>
+                            <input type="checkbox" id="toggleIntrusion" checked onchange="updateSettings()">
+                            <span class="slider"></span>
+                        </label>
+                        <label class="switch-row">
+                            <span class="switch-title">Auto Incident Recording</span>
+                            <input type="checkbox" id="toggleAutoRecord" checked onchange="updateSettings()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- DETECTION SETTINGS -->
+                <div class="panel-card">
+                    <div class="card-header">
+                        <h2>SENSITIVITY & MODELS</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="detectorModelSelect">DETECTOR ENGINE</label>
+                            <select id="detectorModelSelect" class="cyber-select" onchange="updateSettings()">
+                                <option value="contour_heuristic" selected>Geometric Aspect-Ratio (Fast CPU)</option>
+                                <option value="hog_svm">OpenCV HOG + SVM Person</option>
+                                <option value="mobilenet_ssd">MobileNet-SSD DNN (Caffe/ONNX)</option>
+                            </select>
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <label for="motionSensitivity">Motion Sensitivity</label>
+                                <span id="valMotionSens">50%</span>
+                            </div>
+                            <input type="range" id="motionSensitivity" min="10" max="95" value="50" oninput="updateSettings()">
+                        </div>
+                        <div class="slider-group">
+                            <div class="slider-header">
+                                <label for="minContourArea">Min Object Size</label>
+                                <span id="valMinArea">600 px</span>
+                            </div>
+                            <input type="range" id="minContourArea" min="200" max="3000" step="50" value="600" oninput="updateSettings()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ZONES & TRIPWIRES MANAGER -->
+                <div class="panel-card flex-grow">
+                    <div class="card-header">
+                        <h2>SECURITY ZONES & LINES</h2>
+                        <div class="header-actions">
+                            <button class="micro-btn" onclick="startDrawingZone()" title="Draw Polygon Zone">+ Zone</button>
+                            <button class="micro-btn" onclick="startDrawingTripwire()" title="Draw Tripwire Line">+ Line</button>
+                        </div>
+                    </div>
+                    <div class="card-body overflow-y">
+                        <div id="zonesList" class="items-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                        <div id="tripwiresList" class="items-list mt-3">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- CENTER COLUMN: LIVE VIDEO STREAM & INTERACTIVE CANVAS -->
+            <section class="dashboard-center">
+                <!-- VIDEO CONTAINER -->
+                <div class="video-deck-container">
+                    <div class="video-wrapper" id="videoWrapper">
+                        <!-- Live MJPEG stream -->
+                        <img id="liveStreamImg" src="/api/stream" alt="VisionGuard Video Stream" class="live-stream-feed" onload="onStreamLoaded()" onerror="onStreamError()">
+                        <!-- Interactive Drawing & HUD Canvas -->
+                        <canvas id="overlayCanvas" class="overlay-canvas"></canvas>
+                        
+                        <!-- DRAWING INSTRUCTION BANNER (Active when drawing) -->
+                        <div id="drawInstructionBar" class="draw-instruction-bar" style="display:none;">
+                            <span id="drawInstructionText">Click on video to place polygon vertices. Click first point or double-click to finish.</span>
+                            <div class="draw-actions">
+                                <button class="cyber-btn-small" onclick="finishCurrentDrawing()">Finish</button>
+                                <button class="cyber-btn-small cancel" onclick="cancelCurrentDrawing()">Cancel</button>
+                            </div>
+                        </div>
+
+                        <!-- SCANLINE EFFECT OVERLAY -->
+                        <div class="cyber-scanlines"></div>
+
+                        <!-- LIVE HUD OVERLAY CORNERS -->
+                        <div class="cctv-bracket top-left"></div>
+                        <div class="cctv-bracket top-right"></div>
+                        <div class="cctv-bracket bottom-left"></div>
+                        <div class="cctv-bracket bottom-right"></div>
+                    </div>
+
+                    <!-- HUD OVERLAY TOGGLES BAR -->
+                    <div class="video-hud-toolbar">
+                        <span class="toolbar-title">HUD OVERLAYS:</span>
+                        <button class="hud-toggle-btn active" id="btnHudBoxes" onclick="toggleHudLayer('boxes')">Boxes</button>
+                        <button class="hud-toggle-btn active" id="btnHudTracks" onclick="toggleHudLayer('tracks')">Track IDs</button>
+                        <button class="hud-toggle-btn active" id="btnHudTrails" onclick="toggleHudLayer('trails')">Motion Trails</button>
+                        <button class="hud-toggle-btn" id="btnHudHeatmap" onclick="toggleHudLayer('heatmap')">Thermal Heatmap</button>
+                        <button class="hud-toggle-btn" id="btnHudMask" onclick="toggleHudLayer('mask')">Motion Mask</button>
+                        <button class="hud-toggle-btn active" id="btnHudZones" onclick="toggleHudLayer('zones')">Zones</button>
+                        <button class="hud-toggle-btn active" id="btnHudLines" onclick="toggleHudLayer('lines')">Tripwires</button>
+                    </div>
+                </div>
+
+                <!-- LIVE STATS STRIP -->
+                <div class="stats-summary-strip">
+                    <div class="stat-card">
+                        <div class="stat-icon cyan">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-value text-cyan" id="statInCount">0</span>
+                            <span class="stat-label">TOTAL INFLOW</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon emerald">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-value text-emerald" id="statOutCount">0</span>
+                            <span class="stat-label">TOTAL OUTFLOW</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon amber">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-value text-amber" id="statActiveTracks">0</span>
+                            <span class="stat-label">ACTIVE TARGETS</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon rose">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div class="stat-details">
+                            <span class="stat-value text-rose" id="statBreachesCount">0</span>
+                            <span class="stat-label">ZONE BREACHES</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <button class="reset-counts-btn" onclick="resetCounters()" title="Reset All Counters">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                            RESET COUNTS
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BOTTOM ANALYTICS & CHARTS TABS -->
+                <div class="analytics-deck">
+                    <div class="analytics-tabs-header">
+                        <div class="tab-buttons">
+                            <button class="tab-btn active" onclick="switchAnalyticsTab('traffic')">Traffic Flow Timeline</button>
+                            <button class="tab-btn" onclick="switchAnalyticsTab('classes')">Object Classification</button>
+                            <button class="tab-btn" onclick="switchAnalyticsTab('zones')">Zone Breach Analysis</button>
+                            <button class="tab-btn" onclick="switchAnalyticsTab('gallery')">Recordings & Snapshots</button>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tabTraffic">
+                        <div class="chart-container">
+                            <canvas id="trafficTimelineChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tabClasses" style="display:none;">
+                        <div class="chart-container-split">
+                            <div class="chart-box">
+                                <canvas id="classesDoughnutChart"></canvas>
+                            </div>
+                            <div class="chart-box">
+                                <canvas id="hourlyVolumeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tabZones" style="display:none;">
+                        <div class="chart-container">
+                            <canvas id="zoneViolationsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tabGallery" style="display:none;">
+                        <div class="gallery-wrapper">
+                            <div class="gallery-subnav">
+                                <button class="cyber-btn-small active" id="btnShowRecordings" onclick="loadRecordingsGallery()">Recorded Incidents (.MP4)</button>
+                                <button class="cyber-btn-small" id="btnShowSnapshots" onclick="loadSnapshotsGallery()">Security Snapshots (.JPG)</button>
+                            </div>
+                            <div class="media-grid" id="mediaGalleryGrid">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT COLUMN: REAL-TIME EVENT STREAM & AUDIT LOG -->
+            <aside class="dashboard-sidebar right-panel">
+                <div class="panel-card flex-grow full-height">
+                    <div class="card-header">
+                        <h2>LIVE SECURITY AUDIT LOG</h2>
+                        <div class="header-actions">
+                            <button class="micro-btn" onclick="exportCsv()" title="Export CSV">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                CSV
+                            </button>
+                            <button class="micro-btn" onclick="clearEventLogs()" title="Clear Logs">Clear</button>
+                        </div>
+                    </div>
+                    
+                    <!-- SEVERITY FILTER TABS -->
+                    <div class="severity-filter-bar">
+                        <button class="filter-chip active" onclick="filterEvents('ALL')">ALL</button>
+                        <button class="filter-chip critical" onclick="filterEvents('CRITICAL')">CRITICAL</button>
+                        <button class="filter-chip warning" onclick="filterEvents('WARNING')">WARNING</button>
+                        <button class="filter-chip info" onclick="filterEvents('INFO')">INFO</button>
+                    </div>
+
+                    <!-- EVENTS FEED CONTAINER -->
+                    <div class="card-body overflow-y" id="eventsFeedContainer">
+                        <div id="eventsList" class="events-timeline">
+                            <!-- Populated in real-time -->
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- ZONE / TRIPWIRE EDIT MODAL -->
+        <div id="zoneModal" class="modal-backdrop" style="display:none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3 id="zoneModalTitle">Configure Polygon Zone</h3>
+                    <button class="close-btn" onclick="closeZoneModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Zone Name</label>
+                        <input type="text" id="modalZoneName" class="cyber-input" value="Restricted Courtyard">
+                    </div>
+                    <div class="form-group">
+                        <label>Alert Severity</label>
+                        <select id="modalZoneSeverity" class="cyber-select">
+                            <option value="RESTRICTED">RESTRICTED (Instant Alarm & Record)</option>
+                            <option value="CAUTION">CAUTION (Dwell Time Threshold)</option>
+                            <option value="MONITORED">MONITORED (Log Only)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Dwell Time Threshold (Seconds)</label>
+                        <input type="number" id="modalZoneDwell" class="cyber-input" value="2.0" step="0.5" min="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label>Zone Outline Color</label>
+                        <input type="color" id="modalZoneColor" class="cyber-color-picker" value="#ef4444">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="cyber-btn-outline" onclick="closeZoneModal()">Cancel</button>
+                    <button class="cyber-btn-primary" onclick="saveCurrentZoneConfig()">Save Zone</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRIPWIRE EDIT MODAL -->
+        <div id="tripwireModal" class="modal-backdrop" style="display:none;">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3 id="tripwireModalTitle">Configure Counting Tripwire</h3>
+                    <button class="close-btn" onclick="closeTripwireModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Tripwire Line Name</label>
+                        <input type="text" id="modalTwName" class="cyber-input" value="Main Entry Line">
+                    </div>
+                    <div class="form-group">
+                        <label>Count Direction</label>
+                        <select id="modalTwDirection" class="cyber-select">
+                            <option value="BOTH">Bidirectional (IN & OUT)</option>
+                            <option value="IN">IN Direction Only</option>
+                            <option value="OUT">OUT Direction Only</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Line Color</label>
+                        <input type="color" id="modalTwColor" class="cyber-color-picker" value="#00f2fe">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="cyber-btn-outline" onclick="closeTripwireModal()">Cancel</button>
+                    <button class="cyber-btn-primary" onclick="saveCurrentTripwireConfig()">Save Tripwire</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MEDIA PLAYER MODAL (FOR RECORDINGS / SNAPSHOTS) -->
+        <div id="mediaModal" class="modal-backdrop" style="display:none;">
+            <div class="modal-card modal-large">
+                <div class="modal-header">
+                    <h3 id="mediaModalTitle">Incident Playback</h3>
+                    <button class="close-btn" onclick="closeMediaModal()">&times;</button>
+                </div>
+                <div class="modal-body text-center" id="mediaModalContent">
+                    <!-- Video or Image injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
