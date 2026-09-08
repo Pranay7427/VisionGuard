@@ -43,14 +43,6 @@
 
 ---
 
-## Live System Snapshot Demonstration
-
-Below is an automated incident snapshot captured during an intrusion breach in the Restricted Courtyard zone:
-
-![VisionGuard Incident Snapshot](file:///C:/Users/prana/.gemini/antigravity-ide/brain/b30f529b-2204-4201-9df1-4c0620d7d908/snapshot_demo.jpg)
-
----
-
 ## Verification & Test Results
 
 ### 1. Automated Unit & Integration Tests
@@ -65,12 +57,6 @@ All 10 test suites passed cleanly in under 0.3 seconds:
 - `test_zones_crud` & `test_tripwires_crud`: Verified REST creation, retrieval, and deletion of custom ROIs and lines.
 - `test_instant_actions_and_stats`: Verified telemetry aggregation, snapshot triggers, and media listing.
 
-### 2. Live Deployment Status
-- Server running at **`http://localhost:8000`**
-- WebSocket telemetry streaming at **`ws://localhost:8000/ws/telemetry`**
-- Live video stream available at **`http://localhost:8000/api/stream`**
-
----
 
 ## How to Run & Use VisionGuard
 
